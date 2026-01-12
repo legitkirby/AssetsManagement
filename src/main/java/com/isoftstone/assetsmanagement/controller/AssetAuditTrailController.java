@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/audit-trails")
+@CrossOrigin
 public class AssetAuditTrailController {
 
     @Resource
