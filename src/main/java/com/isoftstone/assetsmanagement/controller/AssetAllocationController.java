@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/allocations")
+@CrossOrigin
 public class AssetAllocationController {
 
     @Resource
