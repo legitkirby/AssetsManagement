@@ -5,6 +5,7 @@ import com.isoftstone.assetsmanagement.entity.User;
 import com.isoftstone.assetsmanagement.mapper.UserMapper;
 import com.isoftstone.assetsmanagement.service.UserService;
 import org.springframework.stereotype.Service;
+import com.isoftstone.assetsmanagement.dto.LoginRequest;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -73,4 +74,35 @@ public class UserServiceImpl implements UserService {
                 .or().like("email", keyword);
         return userMapper.selectList(queryWrapper);
     }
+    @Override
+    public User login(LoginRequest loginRequest) {
+        String usernameOrEmail = loginRequest.getUsernameOrEmail(); // Vue sends as "username"
+        String password = loginRequest.getPassword();
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+
+        // Check both username and email columns for the "username" field from Vue
+        queryWrapper.and(wrapper -> wrapper
+                .eq("username", usernameOrEmail)
+                .or()
+                .eq("email", usernameOrEmail)
+        );
+
+        User user = userMapper.selectOne(queryWrapper);
+
+        if (user == null) {
+            return null; // User not found
+        }
+
+        if (!user.getPassword().equals(password)) {
+            return null; // Wrong password
+        }
+
+        if (!"ACTIVE".equals(user.getStatus())) {
+            return null; // User inactive
+        }
+
+        return user;
+    }
+
 }

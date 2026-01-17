@@ -4,6 +4,7 @@ import com.isoftstone.assetsmanagement.entity.AssetAuditTrail;
 import com.isoftstone.assetsmanagement.service.AssetAuditTrailService;
 import org.springframework.web.bind.annotation.*;
 
+
 import javax.annotation.Resource;
 import java.util.List;
 

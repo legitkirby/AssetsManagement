@@ -58,8 +58,6 @@ public class DepreciationRecordServiceImpl implements DepreciationRecordService 
 
     @Override
     public int calculateMonthlyDepreciation() {
-        // This would be a complex implementation calculating depreciation for all assets
-        // For now, returning placeholder
         return 0;
     }
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -25,12 +26,16 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public List<Asset> findAllAssets() {
-        return assetMapper.selectList(null);
+        QueryWrapper<Asset> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_deleted", false);
+        return assetMapper.selectList(queryWrapper);
     }
 
     @Override
     public Asset findAssetById(Integer id) {
-        return assetMapper.selectById(id);
+        QueryWrapper<Asset> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id).eq("is_deleted", false);
+        return assetMapper.selectOne(queryWrapper);
     }
 
     @Override
@@ -61,9 +66,12 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public List<Asset> searchAssets(String keyword) {
         QueryWrapper<Asset> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("asset_code", keyword)
-                .or().like("asset_name", keyword)
-                .or().like("serial_number", keyword);
+        queryWrapper.eq("is_deleted", false)
+                .and(wrapper -> wrapper
+                        .like("asset_code", keyword)
+                        .or().like("asset_name", keyword)
+                        .or().like("serial_number", keyword)
+                );
         return assetMapper.selectList(queryWrapper);
     }
 
@@ -83,7 +91,13 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int deleteAssetById(Integer id) {
-        return assetMapper.deleteById(id);
+        //  SOFT DELETE: Mark as deleted instead of actually deleting
+        Asset asset = assetMapper.selectById(id);
+        if (asset != null) {
+            asset.setIsDeleted(true);
+            return assetMapper.updateById(asset);
+        }
+        return 0;
     }
 
     @Override
@@ -103,20 +117,25 @@ public class AssetServiceImpl implements AssetService {
             asset.setDepartmentId(departmentId);
             asset.setAssignedTo(employeeId);
             asset.setStatus("IN_USE");
+            asset.setUpdatedTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            asset.setUpdatedBy("1");
 
-            // Create allocation history
+            Integer allocatedByUserId = 1;
+
             AssetAllocationHistory allocation = new AssetAllocationHistory();
             allocation.setAssetId(assetId);
             allocation.setToDepartmentId(departmentId);
             allocation.setToEmployeeId(employeeId);
             allocation.setAllocationType("TRANSFER");
             allocation.setReason(reason);
+            allocation.setAllocatedBy(allocatedByUserId); // ✅ ADD THIS LINE
 
             allocationHistoryMapper.insert(allocation);
             return assetMapper.updateById(asset);
         }
         return 0;
     }
+
 
     @Override
     public int disposeAsset(Integer assetId, String reason, String method) {
@@ -133,21 +152,20 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public List<Asset> findAssetsForDepreciation() {
-        // Find assets that are in use and not fully depreciated
         QueryWrapper<Asset> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("status", "IN_USE")
-                .isNull("depreciation_end_date")
-                .or().gt("depreciation_end_date", LocalDate.now().toString());
+        queryWrapper.eq("is_deleted", false)
+                .eq("status", "IN_USE")
+                .and(wrapper -> wrapper
+                        .isNull("depreciation_end_date")
+                        .or().gt("depreciation_end_date", LocalDate.now().toString())
+                );
         return assetMapper.selectList(queryWrapper);
     }
 
     @Override
     public int calculateDepreciation(Integer assetId) {
-        // Simplified depreciation calculation
-        // In real implementation, you would calculate based on depreciation method
         Asset asset = assetMapper.selectById(assetId);
         if (asset != null && asset.getCurrentValue() != null && asset.getPurchaseCost() != null) {
-            // Simple straight-line depreciation example
             BigDecimal monthlyDepreciation = asset.getPurchaseCost()
                     .divide(BigDecimal.valueOf(60), 2, BigDecimal.ROUND_HALF_UP); // 5 years = 60 months
 
@@ -161,4 +179,29 @@ public class AssetServiceImpl implements AssetService {
         }
         return 0;
     }
+    @Override
+    public int countAssets() {
+        return assetMapper.countAllAssets();
+    }
+    @Override
+    public int countAssetsInUse() {
+        return assetMapper.countAssetsInUse();
+    }
+
+    @Override
+    public int countAssetsInMaintenance() {
+        return assetMapper.countAssetsInMaintenance();
+    }
+
+
+    @Override
+    public int countAssetsByStatus(String status) {
+        return assetMapper.countAssetsByStatus(status);
+    }
+
+    @Override
+    public Double getTotalAssetValue() {
+        return assetMapper.getTotalAssetValue();
+    }
+
 }

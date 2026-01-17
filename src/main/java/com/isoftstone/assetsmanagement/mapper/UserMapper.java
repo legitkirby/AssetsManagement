@@ -17,4 +17,5 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("SELECT * FROM users WHERE role = #{role} AND status = 'ACTIVE'")
     List<User> findUsersByRole(String role);
+
 }

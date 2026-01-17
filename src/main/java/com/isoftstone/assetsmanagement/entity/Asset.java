@@ -38,4 +38,5 @@ public class Asset {
     private String createdBy;
     private String updatedBy;
     private String remark;
+    private Boolean isDeleted = false;
 }

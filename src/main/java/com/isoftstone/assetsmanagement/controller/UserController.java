@@ -3,7 +3,7 @@ package com.isoftstone.assetsmanagement.controller;
 import com.isoftstone.assetsmanagement.entity.User;
 import com.isoftstone.assetsmanagement.service.UserService;
 import org.springframework.web.bind.annotation.*;
-
+import com.isoftstone.assetsmanagement.dto.LoginRequest;
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -63,4 +63,15 @@ public class UserController {
     public List<User> searchUsers(@RequestParam String keyword) {
         return userService.searchUsers(keyword);
     }
+    @PostMapping("/login")
+    public User login(@RequestBody LoginRequest loginRequest) {
+        return userService.login(loginRequest);
+    }
+    @GetMapping("/test/{username}")
+    public User test(@PathVariable String username) {
+        User user = userService.findUserByUsername(username);
+        System.out.println(user);
+        return user;
+    }
+
 }

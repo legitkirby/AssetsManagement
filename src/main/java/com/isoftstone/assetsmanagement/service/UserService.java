@@ -1,7 +1,7 @@
 package com.isoftstone.assetsmanagement.service;
 
 import com.isoftstone.assetsmanagement.entity.User;
-
+import com.isoftstone.assetsmanagement.dto.LoginRequest;
 import java.util.List;
 
 public interface UserService {
@@ -15,4 +15,5 @@ public interface UserService {
     int deleteUserById(Integer id);
     int changeUserStatus(Integer id, String status);
     List<User> searchUsers(String keyword);
+    User login(LoginRequest loginRequest);
 }

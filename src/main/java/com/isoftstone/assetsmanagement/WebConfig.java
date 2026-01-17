@@ -11,9 +11,10 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // allow all paths
-                        .allowedOrigins("http://localhost:8080") // Vue frontend
-                        .allowedMethods("*"); // allow GET, POST, PUT, DELETE, etc.
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:8080",  "http://localhost:9001")
+                        .allowedMethods("*")
+                        .allowCredentials(true);
             }
         };
     }

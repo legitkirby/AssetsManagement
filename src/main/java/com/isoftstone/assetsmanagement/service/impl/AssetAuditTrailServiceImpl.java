@@ -6,6 +6,9 @@ import com.isoftstone.assetsmanagement.mapper.AssetAuditTrailMapper;
 import com.isoftstone.assetsmanagement.service.AssetAuditTrailService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -49,6 +52,25 @@ public class AssetAuditTrailServiceImpl implements AssetAuditTrailService {
 
     @Override
     public int addAuditTrail(AssetAuditTrail auditTrail) {
+        // Set current timestamp if not provided
+        if (auditTrail.getChangeTime() == null || auditTrail.getChangeTime().isEmpty()) {
+            auditTrail.setChangeTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        }
+
+        // Set default values for required fields if null
+        if (auditTrail.getChangedField() == null || auditTrail.getChangedField().isEmpty()) {
+            auditTrail.setChangedField("GENERAL");
+        }
+        if (auditTrail.getOldValue() == null) {
+            auditTrail.setOldValue("");
+        }
+        if (auditTrail.getNewValue() == null) {
+            auditTrail.setNewValue("");
+        }
+        if (auditTrail.getChangeReason() == null) {
+            auditTrail.setChangeReason("");
+        }
+
         return assetAuditTrailMapper.insert(auditTrail);
     }
 }

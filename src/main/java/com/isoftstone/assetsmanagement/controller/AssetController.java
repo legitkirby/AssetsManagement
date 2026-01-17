@@ -54,6 +54,7 @@ public class AssetController {
         return assetService.searchAssets(keyword);
     }
 
+
     @PostMapping("/add")
     public int addAsset(@RequestBody Asset asset) {
         return assetService.addAsset(asset);
@@ -72,6 +73,17 @@ public class AssetController {
     @PutMapping("/status/{id}")
     public int changeAssetStatus(@PathVariable Integer id, @RequestParam String status) {
         return assetService.changeAssetStatus(id, status);
+    }
+
+    @PutMapping("/restore/{id}")
+    public int restoreAsset(@PathVariable Integer id) {
+        Asset asset = assetService.findAssetById(id);
+        if (asset != null) {
+            asset.setIsDeleted(false);
+            asset.setStatus("AVAILABLE"); // Or whatever default status
+            return assetService.updateAsset(asset);
+        }
+        return 0;
     }
 
     @PostMapping("/allocate")
@@ -93,4 +105,26 @@ public class AssetController {
     public int calculateDepreciation(@PathVariable Integer assetId) {
         return assetService.calculateDepreciation(assetId);
     }
+    // ===== Dashboard KPI APIs =====
+
+    @GetMapping("/count")
+    public int getTotalAssetCount() {
+        return assetService.countAssets();
+    }
+
+    @GetMapping("/in-use")
+    public int getAssetsInUse() {
+        return assetService.countAssetsByStatus("IN_USE");
+    }
+
+    @GetMapping("/maintenance")
+    public int getAssetsUnderMaintenance() {
+        return assetService.countAssetsByStatus("MAINTENANCE");
+    }
+
+    @GetMapping("/value")
+    public double getTotalAssetValue() {
+        return assetService.getTotalAssetValue();
+    }
+
 }

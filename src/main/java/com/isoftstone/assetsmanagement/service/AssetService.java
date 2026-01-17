@@ -21,4 +21,11 @@ public interface AssetService {
     int disposeAsset(Integer assetId, String reason, String method);
     List<Asset> findAssetsForDepreciation();
     int calculateDepreciation(Integer assetId);
+    int countAssets();
+    int countAssetsInUse();
+    int countAssetsInMaintenance();
+    int countAssetsByStatus(String status);
+
+    Double getTotalAssetValue();
+
 }
